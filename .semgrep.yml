@@ -1,0 +1,37 @@
+rules:
+  - id: hardcoded-secret
+    patterns:
+      - pattern-either:
+          - pattern: $KEY = "..."
+          - pattern: $KEY = '...'
+    message: Possible hardcoded secret in $KEY — use environment variables or a secrets manager
+    metadata:
+      category: security
+      confidence: MEDIUM
+    languages: [python]
+    severity: WARNING
+    paths:
+      include:
+        - app/
+
+  - id: no-debug-mode
+    patterns:
+      - pattern: app.run(..., debug=True, ...)
+    message: Do not enable debug mode — it exposes stack traces and allows code execution
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - app/
+
+  - id: no-shell-true
+    patterns:
+      - pattern: subprocess.call(..., shell=True, ...)
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+    message: Avoid shell=True — pass arguments as a list to prevent command injection
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - app/

@@ -1,0 +1,4 @@
+project_name    = "secure-pipeline"
+aws_region      = "us-east-1"
+certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+container_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/secure-pipeline:latest"
