@@ -45,7 +45,9 @@ fi
 # --- IaC scan ---
 header "IaC scan — Checkov"
 if check_tool checkov; then
-    checkov -d "$ROOT/terraform/" --quiet --compact || FAILED=1
+    CHECKOV_ARGS=(-d "$ROOT/terraform/" --quiet --compact)
+    [ -f "$ROOT/.checkov.yml" ] && CHECKOV_ARGS+=(--config-file "$ROOT/.checkov.yml")
+    checkov "${CHECKOV_ARGS[@]}" || FAILED=1
 fi
 
 # --- Policy check ---

@@ -1,0 +1,14 @@
+soft-fail: false
+compact: true
+quiet: true
+skip-check:
+  # KMS encryption for CloudWatch — enabled via kms_key_arn variable.
+  # Checkov can't evaluate variable defaults, so this flags even when the
+  # variable is wired. Users should pass a real KMS key in tfvars.
+  - CKV_AWS_158
+  # S3 cross-region replication — requires a secondary region which is
+  # environment-specific. Enable in production tfvars if needed.
+  - CKV_AWS_144
+  # WAF Log4j AMR rule — requires specific WAF rule configuration that
+  # depends on the WAF ACL passed via waf_acl_arn variable.
+  - CKV2_AWS_76
