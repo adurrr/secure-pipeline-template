@@ -51,16 +51,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sudo sh -s -- -b /usr/local/bin
+
       - name: Scan dependencies with Trivy
-        uses: aquasecurity/trivy-action@0.31.0
         continue-on-error: true
-        with:
-          scan-type: fs
-          scan-ref: app/
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          format: sarif
-          output: trivy-sca.sarif
+        run: |
+          trivy fs --format sarif --output trivy-sca.sarif \
+            --severity CRITICAL,HIGH --exit-code 1 app/
 
       - name: Upload SCA results
         uses: github/codeql-action/upload-sarif@v4
@@ -118,15 +118,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+            | sudo sh -s -- -b /usr/local/bin
+
       - name: Scan container image
-        uses: aquasecurity/trivy-action@0.31.0
         continue-on-error: true
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          format: sarif
-          output: trivy-image.sarif
+        run: |
+          trivy image --format sarif --output trivy-image.sarif \
+            --severity CRITICAL,HIGH --exit-code 1 \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Upload image scan results
         uses: github/codeql-action/upload-sarif@v4
