@@ -15,6 +15,8 @@ services:
       retries: 3
     restart: unless-stopped
     read_only: true
+    tmpfs:
+      - /tmp
     security_opt:
       - no-new-privileges:true
     deploy:
