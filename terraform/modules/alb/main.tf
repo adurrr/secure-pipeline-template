@@ -19,6 +19,18 @@ variable "container_port" {
   default = 8080
 }
 
+variable "allowed_cidr_blocks" {
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+  description = "CIDR blocks allowed to reach the ALB. Restrict in production."
+}
+
+variable "waf_acl_arn" {
+  type        = string
+  default     = ""
+  description = "WAF Web ACL ARN to associate with the ALB"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
@@ -57,6 +69,13 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+# WAF association
+resource "aws_wafv2_web_acl_association" "this" {
+  count        = var.waf_acl_arn != "" ? 1 : 0
+  resource_arn = aws_lb.this.arn
+  web_acl_arn  = var.waf_acl_arn
+}
+
 # HTTP listener — redirect to HTTPS
 resource "aws_lb_listener" "http_redirect" {
   load_balancer_arn = aws_lb.this.arn
@@ -93,22 +112,15 @@ resource "aws_lb_target_group" "this" {
 
 resource "aws_security_group" "alb" {
   name_prefix = "${var.name}-alb-"
+  description = "Security group for ${var.name} ALB"
   vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS from internet"
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP redirect"
+    cidr_blocks = var.allowed_cidr_blocks
+    description = "HTTPS from allowed sources"
   }
 
   egress {
@@ -133,6 +145,20 @@ resource "aws_s3_bucket" "alb_logs" {
   tags          = var.tags
 }
 
+resource "aws_s3_bucket_versioning" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_logging" "alb_logs" {
+  bucket        = aws_s3_bucket.alb_logs.id
+  target_bucket = aws_s3_bucket.alb_logs.id
+  target_prefix = "access-logs/"
+}
+
 resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
 
@@ -142,7 +168,23 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
     expiration {
       days = 90
     }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
   }
+
+  rule {
+    id     = "noncurrent-versions"
+    status = "Enabled"
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
+resource "aws_s3_bucket_notification" "alb_logs" {
+  bucket      = aws_s3_bucket.alb_logs.id
+  eventbridge = true
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {

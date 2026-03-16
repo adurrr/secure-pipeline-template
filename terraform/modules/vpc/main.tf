@@ -19,6 +19,12 @@ variable "public_subnets" {
   type = list(string)
 }
 
+variable "kms_key_arn" {
+  type        = string
+  default     = ""
+  description = "KMS key ARN for encrypting CloudWatch logs"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
@@ -30,6 +36,12 @@ resource "aws_vpc" "this" {
   enable_dns_support   = true
 
   tags = merge(var.tags, { Name = var.name })
+}
+
+# Restrict default security group to deny all traffic
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.this.id
+  tags   = merge(var.tags, { Name = "${var.name}-default-restricted" })
 }
 
 resource "aws_internet_gateway" "this" {
@@ -116,7 +128,8 @@ resource "aws_flow_log" "this" {
 
 resource "aws_cloudwatch_log_group" "flow_logs" {
   name              = "/vpc/flow-logs/${var.name}"
-  retention_in_days = 90
+  retention_in_days = 365
+  kms_key_id        = var.kms_key_arn
   tags              = var.tags
 }
 
@@ -152,7 +165,7 @@ resource "aws_iam_role_policy" "flow_logs" {
         "logs:DescribeLogStreams",
       ]
       Effect   = "Allow"
-      Resource = "*"
+      Resource = aws_cloudwatch_log_group.flow_logs.arn
     }]
   })
 }

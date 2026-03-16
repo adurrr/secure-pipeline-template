@@ -12,7 +12,11 @@ case "$ENVIRONMENT" in
     local)
         # Local / on-premise deployment via Docker Compose
         cd "$ROOT"
-        IMAGE_TAG="$IMAGE_TAG" docker compose up -d --build
+        COMPOSE_CMD="docker compose"
+        if ! $COMPOSE_CMD version &>/dev/null; then
+            COMPOSE_CMD="docker-compose"
+        fi
+        IMAGE_TAG="$IMAGE_TAG" $COMPOSE_CMD up -d --build
         echo "Deployed locally. Health check: https://localhost/healthz"
         ;;
     staging|production)

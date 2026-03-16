@@ -42,6 +42,12 @@ variable "alb_security_group_id" {
   type = string
 }
 
+variable "kms_key_arn" {
+  type        = string
+  default     = ""
+  description = "KMS key ARN for encrypting CloudWatch logs"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
@@ -129,6 +135,7 @@ resource "aws_ecs_service" "this" {
 
 resource "aws_security_group" "ecs" {
   name_prefix = "${var.name}-ecs-"
+  description = "Security group for ${var.name} ECS tasks"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -156,7 +163,8 @@ resource "aws_security_group" "ecs" {
 
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/ecs/${var.name}"
-  retention_in_days = 30
+  retention_in_days = 365
+  kms_key_id        = var.kms_key_arn
   tags              = var.tags
 }
 
