@@ -156,7 +156,7 @@ jobs:
         run: conftest test terraform/ -p policies/opa/ --all-namespaces
 
   deploy-staging:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.AWS_REGION != ''
     runs-on: ubuntu-latest
     needs: policy-check
     environment: staging
@@ -173,7 +173,7 @@ jobs:
         run: ./scripts/deploy.sh staging ${{ github.sha }}
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.AWS_REGION != ''
     runs-on: ubuntu-latest
     needs: deploy-staging
     environment: production
