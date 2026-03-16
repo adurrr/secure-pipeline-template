@@ -34,6 +34,8 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Run Semgrep SAST
         uses: semgrep/semgrep-action@v1
