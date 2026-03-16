@@ -1,7 +1,9 @@
 package deployment
 
+import rego.v1
+
 # Enforce that containers must not run as root
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_ecs_task_definition"
     container := input.resource.container_definitions[_]
     not container.readonlyRootFilesystem
@@ -9,21 +11,21 @@ deny[msg] {
 }
 
 # Enforce encryption on S3 buckets
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_s3_bucket"
     not input.resource.server_side_encryption_configuration
     msg := sprintf("S3 bucket '%s' must have encryption enabled", [input.resource.bucket])
 }
 
 # Enforce VPC flow logs
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_vpc"
     not has_flow_log(input.resource.id)
     msg := "VPC must have flow logs enabled"
 }
 
 # Enforce TLS 1.2+ on load balancers
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_lb_listener"
     input.resource.protocol == "HTTPS"
     not valid_tls_policy(input.resource.ssl_policy)
@@ -31,13 +33,13 @@ deny[msg] {
 }
 
 # Enforce no public S3 buckets
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_s3_bucket_public_access_block"
     not input.resource.block_public_acls
     msg := "S3 bucket must block public ACLs"
 }
 
-deny[msg] {
+deny contains msg if {
     input.resource_type == "aws_security_group"
     rule := input.resource.ingress[_]
     rule.cidr_blocks[_] == "0.0.0.0/0"
@@ -45,15 +47,15 @@ deny[msg] {
     msg := "Security group must not allow SSH from 0.0.0.0/0"
 }
 
-valid_tls_policy(policy) {
+valid_tls_policy(policy) if {
     contains(policy, "TLS13")
 }
 
-valid_tls_policy(policy) {
+valid_tls_policy(policy) if {
     contains(policy, "TLS-1-2")
 }
 
-has_flow_log(vpc_id) {
+has_flow_log(vpc_id) if {
     # Placeholder — in practice, check linked resources
     vpc_id != ""
 }
