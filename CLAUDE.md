@@ -50,3 +50,33 @@ terraform init && terraform plan
 - `scripts/deploy.sh` supports `local`, `staging`, and `production` targets
 - Docker Compose works with both v1 (`docker-compose`) and v2 (`docker compose`)
 - Terraform `kms_key_arn` and `waf_acl_arn` are optional — pass them in tfvars for production hardening
+
+## CI/CD known issues and fixes
+
+### Trivy installation
+- **Do not** use `aquasecurity/trivy-action` — it fails on GitHub API rate limits in CI
+- Use the official install script instead:
+  ```bash
+  curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+    | sudo sh -s -- -b /usr/local/bin
+  ```
+- Always set `continue-on-error: true` on Trivy scan steps so the pipeline doesn't hard-fail before SARIF upload
+- Guard SARIF uploads with `if: always() && hashFiles('trivy-sca.sarif') != ''`
+
+### Gitleaks (secrets scan)
+- Requires full git history — checkout with `fetch-depth: 0` in the `security-scan` job
+- Without this, gitleaks fails with "ambiguous argument / unknown revision"
+
+### OPA/Rego policies (conftest + deployment.rego)
+- Must use OPA v1 syntax: `import rego.v1`, `deny contains msg if { ... }`, `warn contains msg if { ... }`
+- Use `some i` for iterator variables in `input[i]` expressions
+- Do NOT use `some container` or `some rule` before a `:=` assignment — that's a duplicate declaration error
+- Helper rules (e.g. `has_user`) use bare `if { ... }` body, no `contains`
+
+### Deploy jobs (staging / production)
+- Deploy jobs must guard on `vars.AWS_REGION != ''` so they are skipped when AWS is not configured
+- **Do not** add `environment: staging` / `environment: production` to jobs — GitHub creates failed deployment records even when the job is skipped
+
+### Docker Compose — read-only containers
+- App runs with `read_only: true`; gunicorn needs `/tmp` for worker temp files
+- Required: `tmpfs: - /tmp` under the app service, or gunicorn will crash on startup
