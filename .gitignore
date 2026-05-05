@@ -24,3 +24,13 @@ Thumbs.db
 
 # Scan reports
 *.sarif
+
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
