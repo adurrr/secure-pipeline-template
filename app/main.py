@@ -11,6 +11,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 
