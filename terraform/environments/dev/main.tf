@@ -45,6 +45,12 @@ variable "certificate_arn" {
   description = "ACM certificate ARN for HTTPS"
 }
 
+variable "elb_account_id" {
+  type        = string
+  default     = ""
+  description = "AWS ELB account ID for ALB access logs bucket policy"
+}
+
 variable "container_image" {
   type        = string
   description = "Docker image URI (ECR or other registry)"
@@ -68,6 +74,7 @@ module "alb" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   certificate_arn   = var.certificate_arn
+  elb_account_id    = var.elb_account_id
 }
 
 module "ecs" {

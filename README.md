@@ -1,13 +1,42 @@
 # Secure Pipeline Template
 
-[![CI](https://github.com/adurrr/secure-pipeline-template/actions/workflows/ci.yml/badge.svg)](https://github.com/adurrr/secure-pipeline-template/actions/workflows/ci.yml)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![Semgrep](https://img.shields.io/badge/SAST-Semgrep-brightgreen)](https://semgrep.dev)
-[![Trivy](https://img.shields.io/badge/Scanning-Trivy-3f7cac)](https://trivy.dev)
+<p align="center">
+  <a href="https://github.com/adurrr/secure-pipeline-template/actions/workflows/ci.yml">
+    <img src="https://github.com/adurrr/secure-pipeline-template/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License: AGPL-3.0">
+  </a>
+  <a href="https://semgrep.dev">
+    <img src="https://img.shields.io/badge/SAST-Semgrep-brightgreen" alt="SAST: Semgrep">
+  </a>
+  <a href="https://trivy.dev">
+    <img src="https://img.shields.io/badge/Scanning-Trivy-3f7cac" alt="Scanning: Trivy">
+  </a>
+</p>
 
-Production-ready CI/CD pipeline template with integrated security scanning, infrastructure as code, and policy enforcement.
+<p align="center">
+  A production-ready CI/CD pipeline template with integrated security scanning,<br>
+  infrastructure as code, and policy enforcement.
+</p>
 
-Works on **AWS**, **on-premise**, or **local** environments out of the box.
+<p align="center">
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#features">Features</a> •
+  <a href="#customizing-for-your-project">Customization</a> •
+  <a href="#contributing">Contributing</a>
+</p>
+
+---
+
+## Overview
+
+The **Secure Pipeline Template** provides a hardened, opinionated foundation for deploying containerized services. Security gates are embedded directly into the CI/CD pipeline so that vulnerabilities, misconfigurations, and secrets are caught **before** they reach production.
+
+Every commit is scanned with six independent security tools. Infrastructure is defined as code and validated against custom OPA policies. Deployments target either a local Docker Compose stack or AWS ECS Fargate with minimal configuration changes.
+
+**Supported environments:** AWS, on-premise, or local — out of the box.
 
 ---
 
@@ -16,6 +45,7 @@ Works on **AWS**, **on-premise**, or **local** environments out of the box.
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Features](#features)
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
   - [Local / On-Premise](#local--on-premise)
   - [AWS](#aws)
@@ -23,18 +53,11 @@ Works on **AWS**, **on-premise**, or **local** environments out of the box.
 - [Pipeline Stages](#pipeline-stages)
 - [Security Scanning Thresholds](#security-scanning-thresholds)
 - [Repository Structure](#repository-structure)
+- [Technology Stack](#technology-stack)
 - [Customizing for Your Project](#customizing-for-your-project)
 - [Contributing](#contributing)
 - [Security Disclosure](#security-disclosure)
 - [License](#license)
-
----
-
-## Overview
-
-This template provides a hardened, opinionated foundation for deploying containerized services. It embeds security gates directly into the CI/CD pipeline so that vulnerabilities, misconfigurations, and secrets are caught **before** they reach production.
-
-Every commit is scanned with six independent security tools. Infrastructure is defined as code and validated against custom OPA policies. Deployments target either a local Docker Compose stack or AWS ECS Fargate with minimal configuration changes.
 
 ---
 
@@ -89,24 +112,26 @@ graph LR
 
 ---
 
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) — for local and on-premise deployments
+- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.5 — for AWS deployments
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) — for AWS deployments
+
+---
+
 ## Quick Start
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) (local/on-premise)
-- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) >= 1.5 (AWS)
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (AWS)
 
 ### Local / On-Premise
 
 ```bash
-# 1. Generate self-signed TLS certs (or bring your own)
+# 1. Generate self-signed TLS certificates (or bring your own)
 ./scripts/generate-certs.sh
 
 # 2. Build and start the stack
 docker compose up -d --build
 
-# 3. Verify
+# 3. Verify the deployment
 curl -k https://localhost/healthz
 ```
 
@@ -115,11 +140,11 @@ Nginx handles TLS termination, HTTP-to-HTTPS redirect, rate limiting, and securi
 ### AWS
 
 ```bash
-# 1. Configure Terraform
+# 1. Configure Terraform variables
 cp terraform/environments/dev/terraform.tfvars.example terraform/environments/dev/terraform.tfvars
 # Edit terraform.tfvars with your AWS account details
 
-# 2. Deploy
+# 2. Initialize and deploy
 cd terraform/environments/dev
 terraform init && terraform plan && terraform apply
 ```
@@ -136,7 +161,7 @@ terraform init && terraform plan && terraform apply
 ./scripts/scan.sh
 ```
 
-The scan script auto-skips tools that aren't installed and reports which checks ran.
+The scan script auto-skips tools that are not installed and reports which checks ran.
 
 ---
 
@@ -146,7 +171,7 @@ The scan script auto-skips tools that aren't installed and reports which checks 
 push → lint → SAST → SCA → build → image-scan → policy-check → deploy-staging → deploy-prod
 ```
 
-Every stage acts as a gate — a failure in any security stage blocks the deployment.
+Every stage acts as a gate — a failure in any security stage blocks deployment.
 
 ---
 
@@ -172,28 +197,40 @@ Configured in `.github/workflows/ci.yml`:
 │   └── nginx.conf         TLS, rate limiting, security headers
 ├── docker-compose.yml     Local / on-premise deployment
 ├── terraform/
-│   ├── modules/           Reusable infra modules (VPC, ECS, ALB)
-│   └── environments/      Per-environment configs
+│   ├── modules/           Reusable infrastructure modules (VPC, ECS, ALB)
+│   └── environments/      Per-environment configurations
 ├── policies/
 │   ├── opa/               Rego policies for infrastructure
 │   └── conftest/          Dockerfile and container policies
 └── scripts/
     ├── scan.sh            Run all security scans locally
     ├── setup-hooks.sh     Install git pre-commit hooks
-    ├── generate-certs.sh  Generate self-signed TLS certs
+    ├── generate-certs.sh  Generate self-signed TLS certificates
     └── deploy.sh          Deploy to local, staging, or production
 ```
 
 ---
 
+## Technology Stack
+
+- **Runtime:** Python 3, Flask, Gunicorn
+- **Proxy:** Nginx
+- **Containerization:** Docker, Docker Compose
+- **Cloud:** AWS (ECS Fargate, ALB, VPC, S3, CloudWatch)
+- **IaC:** Terraform
+- **Security:** Semgrep, Trivy, Hadolint, Gitleaks, Checkov, Conftest, OPA
+- **CI/CD:** GitHub Actions
+
+---
+
 ## Customizing for Your Project
 
-1. Replace the sample app in `app/` with your service
-2. Update `docker/Dockerfile` for your runtime
-3. Adjust Nginx config in `docker/nginx.conf` for your domain
-4. Add project-specific policies in `policies/`
-5. Tune Semgrep rules in `.semgrep.yml` for your stack
-6. (Optional) Configure `terraform/environments/` for AWS
+1. Replace the sample app in `app/` with your service.
+2. Update `docker/Dockerfile` for your runtime.
+3. Adjust the Nginx configuration in `docker/nginx.conf` for your domain.
+4. Add project-specific policies in `policies/`.
+5. Tune Semgrep rules in `.semgrep.yml` for your stack.
+6. (Optional) Configure `terraform/environments/` for AWS.
 
 ---
 
@@ -201,11 +238,14 @@ Configured in `.github/workflows/ci.yml`:
 
 Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-change`)
-3. Commit your changes
-4. Push to your fork
-5. Open a pull request against the `develop` branch
+1. Fork the repository.
+2. Create a feature branch from `develop`:
+   ```bash
+   git checkout -b feature/my-change develop
+   ```
+3. Commit your changes.
+4. Push to your fork.
+5. Open a pull request against the `develop` branch.
 
 All contributions must pass the security pipeline.
 
@@ -224,3 +264,5 @@ This project is licensed under the [GNU Affero General Public License v3.0](LICE
 > Copyright (C) 2026 secure-pipeline-template contributors
 >
 > This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+>
+> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
