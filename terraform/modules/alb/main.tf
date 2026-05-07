@@ -25,6 +25,12 @@ variable "allowed_cidr_blocks" {
   description = "CIDR blocks allowed to reach the ALB. Restrict in production."
 }
 
+variable "elb_account_id" {
+  type        = string
+  default     = ""
+  description = "AWS ELB account ID for the target region (required for ALB access logs)"
+}
+
 variable "waf_acl_arn" {
   type        = string
   default     = ""
@@ -195,6 +201,23 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
       sse_algorithm = "aws:kms"
     }
   }
+}
+
+
+resource "aws_s3_bucket_policy" "alb_logs" {
+  count  = var.elb_account_id != "" ? 1 : 0
+  bucket = aws_s3_bucket.alb_logs.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        AWS = "arn:aws:iam::${var.elb_account_id}:root"
+      }
+      Action   = "s3:PutObject"
+      Resource = "${aws_s3_bucket.alb_logs.arn}/alb/*"
+    }]
+  })
 }
 
 resource "aws_s3_bucket_public_access_block" "alb_logs" {
