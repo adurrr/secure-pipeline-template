@@ -101,7 +101,17 @@ resource "aws_ecs_task_definition" "this" {
 
     readonlyRootFilesystem = true
     essential              = true
+
+    mountPoints = [{
+      sourceVolume  = "tmp"
+      containerPath = "/tmp"
+      readOnly      = false
+    }]
   }])
+
+  volume {
+    name = "tmp"
+  }
 
   tags = var.tags
 }
