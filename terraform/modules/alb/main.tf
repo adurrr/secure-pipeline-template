@@ -153,11 +153,6 @@ resource "aws_s3_bucket_versioning" "alb_logs" {
   }
 }
 
-resource "aws_s3_bucket_logging" "alb_logs" {
-  bucket        = aws_s3_bucket.alb_logs.id
-  target_bucket = aws_s3_bucket.alb_logs.id
-  target_prefix = "access-logs/"
-}
 
 resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
