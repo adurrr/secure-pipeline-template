@@ -11,8 +11,9 @@ Reusable CI/CD pipeline template with integrated security scanning. Designed to 
 - **Policies as code**: OPA/Rego in `policies/`
 
 ## Git workflow
-- **Gitflow**: `main` (stable releases), `develop` (active development)
-- Feature branches: `feature/<name>` off `develop`
+- **Trunk-based**: `main` is the single source of truth
+- Feature branches: short-lived branches off `main`, merged via PR
+- PRs target `main` directly
 - Commits: human style, no AI attribution, no co-authored-by tags
 - Author: Adur <26388026+adurrr@users.noreply.github.com>
 
