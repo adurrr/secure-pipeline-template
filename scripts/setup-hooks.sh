@@ -30,16 +30,22 @@ fi
 # Lint Dockerfile if changed
 if git diff --cached --name-only | grep -q "Dockerfile"; then
     if command -v hadolint &>/dev/null; then
-        git diff --cached --name-only | grep "Dockerfile" | xargs hadolint
-        echo "✓ Dockerfile lint passed"
+        files=$(git diff --cached --name-only | grep "Dockerfile" || true)
+        if [ -n "$files" ]; then
+            echo "$files" | xargs hadolint
+            echo "✓ Dockerfile lint passed"
+        fi
     fi
 fi
 
 # Lint Python if changed
 if git diff --cached --name-only | grep -q "\.py$"; then
     if command -v ruff &>/dev/null; then
-        git diff --cached --name-only | grep "\.py$" | xargs ruff check
-        echo "✓ Python lint passed"
+        files=$(git diff --cached --name-only | grep "\.py$" || true)
+        if [ -n "$files" ]; then
+            echo "$files" | xargs ruff check
+            echo "✓ Python lint passed"
+        fi
     fi
 fi
 
