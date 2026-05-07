@@ -12,3 +12,7 @@ skip-check:
   # WAF Log4j AMR rule — requires specific WAF rule configuration that
   # depends on the WAF ACL passed via waf_acl_arn variable.
   - CKV2_AWS_76
+  # S3 bucket access logging — the ALB logs bucket purposefully does not
+  # have S3 access logging enabled, as logging the bucket to itself creates
+  # an infinite loop of ever-growing log objects.
+  - CKV_AWS_18
