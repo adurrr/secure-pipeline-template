@@ -39,7 +39,7 @@ fi
 # --- Secret detection ---
 header "Secret detection — Gitleaks"
 if check_tool gitleaks; then
-    gitleaks detect --source "$ROOT" --no-git --exit-code 1 || FAILED=1
+    gitleaks detect --source "$ROOT" --exit-code 1 || FAILED=1
 fi
 
 # --- IaC scan ---
