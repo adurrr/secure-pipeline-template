@@ -56,6 +56,18 @@ variable "container_image" {
   description = "Docker image URI (ECR or other registry)"
 }
 
+variable "kms_key_arn" {
+  type        = string
+  default     = ""
+  description = "KMS key ARN for encrypting CloudWatch logs"
+}
+
+variable "waf_acl_arn" {
+  type        = string
+  default     = ""
+  description = "WAF Web ACL ARN to associate with the ALB"
+}
+
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -65,6 +77,8 @@ module "vpc" {
 
   public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
   private_subnets = ["10.0.10.0/24", "10.0.11.0/24"]
+
+  kms_key_arn = var.kms_key_arn
 }
 
 module "alb" {
@@ -75,6 +89,7 @@ module "alb" {
   public_subnet_ids = module.vpc.public_subnet_ids
   certificate_arn   = var.certificate_arn
   elb_account_id    = var.elb_account_id
+  waf_acl_arn       = var.waf_acl_arn
 }
 
 module "ecs" {
@@ -89,6 +104,7 @@ module "ecs" {
   desired_count         = 1
   cpu                   = 256
   memory                = 512
+  kms_key_arn           = var.kms_key_arn
 }
 
 output "alb_dns" {
