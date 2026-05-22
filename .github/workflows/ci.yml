@@ -171,6 +171,10 @@ jobs:
 
       - name: Generate Terraform plan JSON
         working-directory: terraform/environments/dev
+        env:
+          AWS_ACCESS_KEY_ID: dummy
+          AWS_SECRET_ACCESS_KEY: dummy
+          AWS_REGION: us-east-1
         run: |
           terraform init -backend=false
           terraform plan -no-color -out=tfplan \
