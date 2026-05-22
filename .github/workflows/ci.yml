@@ -153,8 +153,15 @@ jobs:
       - name: Check Dockerfile policies
         run: conftest test docker/Dockerfile -p policies/conftest/
 
+      - name: Generate Terraform plan JSON
+        working-directory: terraform/environments/dev
+        run: |
+          terraform init -backend=false
+          terraform plan -no-color -out=tfplan
+          terraform show -json tfplan > ../../tfplan.json
+
       - name: Check Terraform policies
-        run: conftest test terraform/ -p policies/opa/ --all-namespaces
+        run: conftest test tfplan.json -p policies/opa/ --all-namespaces
 
   deploy-staging:
     if: github.ref == 'refs/heads/main' && vars.AWS_REGION != ''
