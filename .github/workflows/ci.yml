@@ -173,7 +173,9 @@ jobs:
         working-directory: terraform/environments/dev
         run: |
           terraform init -backend=false
-          terraform plan -no-color -out=tfplan
+          terraform plan -no-color -out=tfplan \
+            -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy" \
+            -var="container_image=dummy-image:latest"
           terraform show -json tfplan > ../../tfplan.json
 
       - name: Check Terraform policies
