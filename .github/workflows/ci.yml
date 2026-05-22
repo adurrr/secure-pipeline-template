@@ -187,7 +187,7 @@ jobs:
           terraform plan -no-color -out=tfplan \
             -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy" \
             -var="container_image=dummy-image:latest"
-          terraform show -json tfplan > ../../tfplan.json
+          terraform show -json tfplan > ../../../tfplan.json
 
       - name: Check Terraform policies
         run: conftest test tfplan.json -p policies/opa/ --all-namespaces
