@@ -176,6 +176,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: dummy
           AWS_REGION: us-east-1
         run: |
+          cat > provider_override.tf << 'EOF'
+          provider "aws" {
+            skip_credentials_validation = true
+            skip_requesting_account_id  = true
+            skip_metadata_api_check     = true
+          }
+          EOF
           terraform init -backend=false
           terraform plan -no-color -out=tfplan \
             -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy" \
