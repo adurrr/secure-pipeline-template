@@ -21,7 +21,7 @@ check_tool() {
 # --- SAST ---
 header "SAST — Semgrep"
 if check_tool semgrep; then
-    semgrep scan --config auto "$ROOT/app/" --error --severity ERROR || FAILED=1
+    semgrep scan --config "$ROOT/.semgrep.yml" --config auto "$ROOT/app/" --error --severity ERROR || FAILED=1
 fi
 
 # --- Dependency scan ---
