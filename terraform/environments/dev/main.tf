@@ -90,6 +90,7 @@ module "alb" {
   certificate_arn   = var.certificate_arn
   elb_account_id    = var.elb_account_id
   waf_acl_arn       = var.waf_acl_arn
+  vpc_cidr          = "10.0.0.0/16"
 }
 
 module "ecs" {
