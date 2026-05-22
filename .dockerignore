@@ -1,0 +1,55 @@
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github/
+
+# Terraform state and modules
+terraform/
+
+# Security scan configs (not needed in image)
+.checkov.yml
+.semgrep.yml
+
+# Policies (not needed in image)
+policies/
+
+# Scripts (not needed in image)
+scripts/
+
+# Docker compose (not needed in image)
+docker-compose.yml
+
+# Certs (generated locally, never in image)
+docker/certs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+.venv/
+
+# Scan reports
+*.sarif
+
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Documentation
+*.md
+LICENSE
+AGENTS.md
