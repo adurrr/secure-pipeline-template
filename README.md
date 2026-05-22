@@ -104,7 +104,7 @@ graph LR
 | **SCA** | Trivy | Dependency vulnerability scanning |
 | **Container** | Trivy, Hadolint | Image scanning + Dockerfile linting |
 | **Secrets** | Gitleaks | Pre-commit and CI secret detection |
-| **IaC** | Checkov, tfsec | Terraform misconfiguration scanning |
+| **IaC** | Checkov, Trivy | Terraform misconfiguration scanning |
 | **Policy** | OPA / Conftest | Custom Rego policy enforcement |
 | **Infrastructure** | Terraform | AWS ECS Fargate (optional) |
 | **Local / On-prem** | Docker Compose + Nginx | TLS, rate limiting, hardened containers |
