@@ -42,6 +42,11 @@ variable "tags" {
   default = {}
 }
 
+variable "vpc_cidr" {
+  type        = string
+  description = "VPC CIDR block to restrict ALB egress to VPC scope"
+}
+
 resource "aws_lb" "this" {
   name               = var.name
   internal           = false
@@ -133,7 +138,7 @@ resource "aws_security_group" "alb" {
     from_port   = var.container_port
     to_port     = var.container_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpc_cidr]
     description = "To ECS tasks"
   }
 

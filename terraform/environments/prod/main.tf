@@ -75,6 +75,7 @@ module "alb" {
   public_subnet_ids = module.vpc.public_subnet_ids
   certificate_arn   = var.certificate_arn
   elb_account_id    = var.elb_account_id
+  vpc_cidr          = "10.1.0.0/16"
 }
 
 module "ecs" {
