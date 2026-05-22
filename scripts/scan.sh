@@ -54,6 +54,11 @@ fi
 header "Policy check — Conftest"
 if check_tool conftest; then
     conftest test "$ROOT/docker/Dockerfile" -p "$ROOT/policies/conftest/" || FAILED=1
+
+    # Terraform policy testing requires a plan JSON:
+    #   cd terraform/environments/dev && terraform init -backend=false
+    #   terraform plan -out=tfplan && terraform show -json tfplan > tfplan.json
+    #   conftest test tfplan.json -p policies/opa/ --all-namespaces
 fi
 
 # --- Container image scan ---
