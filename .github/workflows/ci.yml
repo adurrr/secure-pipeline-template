@@ -154,6 +154,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
       - name: Install Conftest
         run: |
           VERSION=0.68.2
@@ -164,8 +169,28 @@ jobs:
       - name: Check Dockerfile policies
         run: conftest test docker/Dockerfile -p policies/conftest/
 
+      - name: Generate Terraform plan JSON
+        working-directory: terraform/environments/dev
+        env:
+          AWS_ACCESS_KEY_ID: dummy
+          AWS_SECRET_ACCESS_KEY: dummy
+          AWS_REGION: us-east-1
+        run: |
+          cat > provider_override.tf << 'EOF'
+          provider "aws" {
+            skip_credentials_validation = true
+            skip_requesting_account_id  = true
+            skip_metadata_api_check     = true
+          }
+          EOF
+          terraform init -backend=false
+          terraform plan -no-color -out=tfplan \
+            -var="certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy" \
+            -var="container_image=dummy-image:latest"
+          terraform show -json tfplan > ../../../tfplan.json
+
       - name: Check Terraform policies
-        run: conftest test terraform/ -p policies/opa/ --all-namespaces
+        run: conftest test tfplan.json -p policies/opa/ --all-namespaces
 
   deploy-staging:
     if: github.ref == 'refs/heads/main' && vars.AWS_REGION != ''
